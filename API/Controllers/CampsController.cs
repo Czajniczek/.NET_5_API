@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CoreCodeCamp.Data;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,14 +11,26 @@ namespace CoreCodeCamp.Controllers
     [Route("api/[controller]")]
     public class CampsController : ControllerBase
     {
-        [HttpGet]
-        public IActionResult Get()
+        private readonly ICampRepository campRepository;
+
+        public CampsController(ICampRepository campRepository)
         {
-            return Ok(new
+            this.campRepository = campRepository;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            try
             {
-                Moniker = "ATL2018",
-                Name = "Atlatna Code Camp"
-            });
+                var result = await campRepository.GetAllCampsAsync();
+
+                return Ok(result);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
+            }
         }
     }
 }
