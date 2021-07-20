@@ -22,6 +22,20 @@ namespace CoreCodeCamp.Controllers
             this.mapper = mapper;
         }
 
+        //public object Get()
+        //{
+        //    return new { Moniker = "ATL2018", Name = "Atlanta Code Camp" };
+        //}
+
+        //[HttpGet]
+        //public IActionResult Get()
+        //{
+        //    if (false) return BadRequest("Wiadomość - zła/błedna prośba");
+        //    if (false) return NotFound("Wiadomość - nie znaleziono");
+
+        //    return Ok(new { Moniker = "ATL2018", Name = "Atlanta Code Camp" });
+        //}
+
         [HttpGet]
         public async Task<ActionResult<CampModel[]>> Get(bool includeTalks = false)
         {
