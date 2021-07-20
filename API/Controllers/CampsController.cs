@@ -53,5 +53,22 @@ namespace CoreCodeCamp.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
             }
         }
+
+        [HttpGet("search")]
+        public async Task<ActionResult<CampModel[]>> SearchByDate(DateTime theDate, bool includeTalks = false)
+        {
+            try
+            {
+                var result = await campRepository.GetAllCampsByEventDate(theDate, includeTalks);
+
+                if (!result.Any()) return NotFound();
+
+                return mapper.Map<CampModel[]>(result);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
+            }
+        }
     }
 }
