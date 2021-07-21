@@ -26,6 +26,7 @@ namespace CoreCodeCamp.Controllers
             this.linkGenerator = linkGenerator;
         }
 
+        #region Create an Association Controller
         [HttpGet]
         public async Task<ActionResult<TalkModel[]>> Get(string moniker)
         {
@@ -40,5 +41,25 @@ namespace CoreCodeCamp.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
             }
         }
+        #endregion
+
+        #region GET an Individual Talk
+        [HttpGet("{talkId:int}")]
+        public async Task<ActionResult<TalkModel>> Get(string moniker, int talkId)
+        {
+            try
+            {
+                var talk = await repository.GetTalkByMonikerAsync(moniker, talkId);
+
+                if (talk == null) return NotFound();
+
+                return mapper.Map<TalkModel>(talk);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
+            }
+        }
+        #endregion
     }
 }
