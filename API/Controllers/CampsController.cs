@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 
 namespace CoreCodeCamp.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class CampsController : ControllerBase
     {
         private readonly ICampRepository campRepository;
