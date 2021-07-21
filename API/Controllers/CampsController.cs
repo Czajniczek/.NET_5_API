@@ -215,5 +215,30 @@ namespace CoreCodeCamp.Controllers
             return BadRequest();
         }
         #endregion
+
+        #region Implementing DELETE
+        [HttpDelete("{moniker}")]
+        public async Task<IActionResult> Delete(string moniker)
+        {
+            try
+            {
+                var oldCamp = await campRepository.GetCampAsync(moniker);
+                if (oldCamp == null) return NotFound();
+
+                campRepository.Delete(oldCamp);
+
+                if (await campRepository.SaveChangesAsync())
+                {
+                    return Ok();
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
+            }
+
+            return BadRequest("Failed to delte the camp");
+        }
+        #endregion
     }
 }
