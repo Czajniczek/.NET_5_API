@@ -3,6 +3,7 @@ using CoreCodeCamp.Data;
 using CoreCodeCamp.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,11 +17,13 @@ namespace CoreCodeCamp.Controllers
     {
         private readonly ICampRepository campRepository;
         private readonly IMapper mapper;
+        private readonly LinkGenerator linkGenerator;
 
-        public CampsController(ICampRepository campRepository, IMapper mapper)
+        public CampsController(ICampRepository campRepository, IMapper mapper, LinkGenerator linkGenerator)
         {
             this.campRepository = campRepository;
             this.mapper = mapper;
+            this.linkGenerator = linkGenerator;
         }
 
         #region Creating an Action
@@ -149,18 +152,42 @@ namespace CoreCodeCamp.Controllers
         }
         #endregion
 
-        #region Model Binding
-        public async Task<ActionResult<CampModel>> Post(CampModel campModel)
+        #region Model Binding, Implementing POST and Adding Model Validation
+        [HttpPost]
+        public async Task<ActionResult<CampModel>> Post(CampModel model)
         {
             try
             {
+                //if(ModelState.IsValid) ...
+
+                var existingCamp = await campRepository.GetCampAsync(model.Moniker);
+                if (existingCamp != null)
+                {
+                    return BadRequest("Moniker in Use");
+                }
+
+                var location = linkGenerator.GetPathByAction("Get", "Camps", new { moniker = model.Moniker });
+
+                if (string.IsNullOrWhiteSpace(location))
+                {
+                    return BadRequest("Could not use curent moniker");
+                }
+
                 // Create a new Camp
-                return Ok();
+                var camp = mapper.Map<Camp>(model);
+                campRepository.Add(camp);
+
+                if (await campRepository.SaveChangesAsync())
+                {
+                    return Created($"/api/camps/{camp.Moniker}", mapper.Map<CampModel>(camp));
+                }
             }
             catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
             }
+
+            return BadRequest();
         }
         #endregion
     }
