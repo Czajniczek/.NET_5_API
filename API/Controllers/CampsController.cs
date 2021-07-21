@@ -190,5 +190,30 @@ namespace CoreCodeCamp.Controllers
             return BadRequest();
         }
         #endregion
+
+        #region Implementing PUT
+        [HttpPut("{moniker}")]
+        public async Task<ActionResult<CampModel>> Put(string moniker, CampModel model)
+        {
+            try
+            {
+                var oldCamp = await campRepository.GetCampAsync(model.Moniker);
+                if (oldCamp == null) return NotFound($"Could not find camp with moniker of {moniker}");
+
+                mapper.Map(model, oldCamp);
+
+                if (await campRepository.SaveChangesAsync())
+                {
+                    return mapper.Map<CampModel>(oldCamp);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
+            }
+
+            return BadRequest();
+        }
+        #endregion
     }
 }
