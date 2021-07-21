@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 namespace CoreCodeCamp.Controllers
 {
     [Route("api/[controller]")]
+    [ApiController]
     public class CampsController : ControllerBase
     {
         private readonly ICampRepository campRepository;
@@ -22,11 +23,14 @@ namespace CoreCodeCamp.Controllers
             this.mapper = mapper;
         }
 
+        #region Creating an Action
         //public object Get()
         //{
         //    return new { Moniker = "ATL2018", Name = "Atlanta Code Camp" };
         //}
+        #endregion
 
+        #region Using Status Codes
         //[HttpGet]
         //public IActionResult Get()
         //{
@@ -35,22 +39,79 @@ namespace CoreCodeCamp.Controllers
 
         //    return Ok(new { Moniker = "ATL2018", Name = "Atlanta Code Camp" });
         //}
+        #endregion
 
+        #region Using GET for Collections
+        //[HttpGet]
+        //public async Task<IActionResult> Get()
+        //{
+        //    try
+        //    {
+        //        var results = await campRepository.GetAllCampsAsync();
+
+        //        return Ok(results);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
+        //    }
+        //}
+        #endregion
+
+        #region Returning Models Instead of Entities
+        //[HttpGet]
+        //public async Task<IActionResult> Get()
+        //{
+        //    try
+        //    {
+        //        var results = await campRepository.GetAllCampsAsync();
+        //        CampModel[] models = mapper.Map<CampModel[]>(results);
+
+        //        return Ok(models);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
+        //    }
+        //}
+
+        //[HttpGet]
+        //public async Task<ActionResult<CampModel[]>> Get()
+        //{
+        //    try
+        //    {
+        //        var results = await campRepository.GetAllCampsAsync();
+        //        //CampModel[] models = mapper.Map<CampModel[]>(results);
+
+        //        //return models;
+
+        //        return mapper.Map<CampModel[]>(results);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
+        //    }
+        //}
+        #endregion
+
+        #region Using Query Strings
         [HttpGet]
         public async Task<ActionResult<CampModel[]>> Get(bool includeTalks = false)
         {
             try
             {
-                var result = await campRepository.GetAllCampsAsync(includeTalks);
+                var results = await campRepository.GetAllCampsAsync(includeTalks);
 
-                return mapper.Map<CampModel[]>(result);
+                return mapper.Map<CampModel[]>(results);
             }
             catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
             }
         }
+        #endregion
 
+        #region Getting an Individual Item
         [HttpGet("{moniker}")]
         public async Task<ActionResult<CampModel>> Get(string moniker)
         {
@@ -67,7 +128,9 @@ namespace CoreCodeCamp.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
             }
         }
+        #endregion
 
+        #region Implementing Searching
         [HttpGet("search")]
         public async Task<ActionResult<CampModel[]>> SearchByDate(DateTime theDate, bool includeTalks = false)
         {
@@ -84,5 +147,21 @@ namespace CoreCodeCamp.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
             }
         }
+        #endregion
+
+        #region Model Binding
+        public async Task<ActionResult<CampModel>> Post(CampModel campModel)
+        {
+            try
+            {
+                // Create a new Camp
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
+            }
+        }
+        #endregion
     }
 }
