@@ -15,13 +15,13 @@ namespace CoreCodeCamp.Controllers
     [Route("api/camps/{moniker}/[controller]")]
     public class TalksController : ControllerBase
     {
-        private readonly ICampRepository repository;
+        private readonly ICampRepository campRepository;
         private readonly IMapper mapper;
         private readonly LinkGenerator linkGenerator;
 
-        public TalksController(ICampRepository repository, IMapper mapper, LinkGenerator linkGenerator)
+        public TalksController(ICampRepository campRepository, IMapper mapper, LinkGenerator linkGenerator)
         {
-            this.repository = repository;
+            this.campRepository = campRepository;
             this.mapper = mapper;
             this.linkGenerator = linkGenerator;
         }
@@ -32,7 +32,7 @@ namespace CoreCodeCamp.Controllers
         {
             try
             {
-                var talks = await repository.GetTalksByMonikerAsync(moniker);
+                var talks = await campRepository.GetTalksByMonikerAsync(moniker, true);
 
                 return mapper.Map<TalkModel[]>(talks);
             }
@@ -49,14 +49,48 @@ namespace CoreCodeCamp.Controllers
         {
             try
             {
-                var talk = await repository.GetTalkByMonikerAsync(moniker, talkId);
+                var talk = await campRepository.GetTalkByMonikerAsync(moniker, talkId, true);
 
-                if (talk == null)
-                {
-                    return NotFound();
-                }
+                if (talk == null) return NotFound();
 
                 return mapper.Map<TalkModel>(talk);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
+            }
+        }
+        #endregion
+
+        #region POST a New Talk
+        [HttpPost]
+        public async Task<ActionResult<TalkModel>> Post(string moniker, TalkModel model)
+        {
+            try
+            {
+                var camp = await campRepository.GetCampAsync(moniker);
+                if (camp == null) return BadRequest("Camp does not exist");
+
+                var talk = mapper.Map<Talk>(model);
+                talk.Camp = camp;
+
+                if (model.Speaker == null) return BadRequest("Speaker ID is required");
+                var speaker = await campRepository.GetSpeakerAsync(model.Speaker.SpeakerId);
+                if (speaker == null) return BadRequest("Speaker could not be found");
+
+                talk.Speaker = speaker;
+                campRepository.Add(talk);
+
+                if (await campRepository.SaveChangesAsync())
+                {
+                    var url = linkGenerator.GetPathByAction(HttpContext, "Get", values: new { moniker, talkId = talk.TalkId });
+
+                    return Created(url, mapper.Map<TalkModel>(talk));
+                }
+                else
+                {
+                    return BadRequest("Failed to save new Talk");
+                }
             }
             catch (Exception)
             {

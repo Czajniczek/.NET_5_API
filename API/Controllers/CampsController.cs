@@ -122,10 +122,7 @@ namespace CoreCodeCamp.Controllers
             {
                 var result = await campRepository.GetCampAsync(moniker, includeTalks);
 
-                if (result == null)
-                {
-                    return NotFound();
-                }
+                if (result == null) return NotFound();
 
                 return mapper.Map<CampModel>(result);
             }
@@ -144,10 +141,7 @@ namespace CoreCodeCamp.Controllers
             {
                 var result = await campRepository.GetAllCampsByEventDate(theDate, includeTalks);
 
-                if (!result.Any())
-                {
-                    return NotFound();
-                }
+                if (!result.Any()) return NotFound();
 
                 return mapper.Map<CampModel[]>(result);
             }
@@ -169,17 +163,13 @@ namespace CoreCodeCamp.Controllers
 
                 var existingCamp = await campRepository.GetCampAsync(model.Moniker);
 
-                if (existingCamp != null)
-                {
-                    return BadRequest("Moniker in Use");
-                }
+                if (existingCamp != null) return BadRequest("Moniker in Use");
+
 
                 var location = linkGenerator.GetPathByAction("Get", "Camps", new { moniker = model.Moniker });
 
-                if (string.IsNullOrWhiteSpace(location))
-                {
-                    return BadRequest("Could not use curent moniker");
-                }
+                if (string.IsNullOrWhiteSpace(location)) return BadRequest("Could not use curent moniker");
+
 
                 // Create a new Camp
                 var camp = mapper.Map<Camp>(model);
@@ -190,13 +180,15 @@ namespace CoreCodeCamp.Controllers
                     //return Created($"/api/camps/{camp.Moniker}", mapper.Map<CampModel>(camp));
                     return Created(location, mapper.Map<CampModel>(camp));
                 }
+                else
+                {
+                    return BadRequest("Failed to save new Camp");
+                }
             }
             catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
             }
-
-            return BadRequest();
         }
         #endregion
 
@@ -208,17 +200,12 @@ namespace CoreCodeCamp.Controllers
             {
                 var oldCamp = await campRepository.GetCampAsync(moniker);
 
-                if (oldCamp == null)
-                {
-                    return NotFound($"Could not find camp with moniker of {moniker}");
-                }
+                if (oldCamp == null) return NotFound($"Could not find camp with moniker of {moniker}");
+
 
                 mapper.Map(model, oldCamp);
 
-                if (await campRepository.SaveChangesAsync())
-                {
-                    return mapper.Map<CampModel>(oldCamp);
-                }
+                if (await campRepository.SaveChangesAsync()) return mapper.Map<CampModel>(oldCamp);
             }
             catch (Exception)
             {
@@ -237,17 +224,13 @@ namespace CoreCodeCamp.Controllers
             {
                 var oldCamp = await campRepository.GetCampAsync(moniker);
 
-                if (oldCamp == null)
-                {
-                    return NotFound();
-                }
+                if (oldCamp == null) return NotFound();
+
 
                 campRepository.Delete(oldCamp);
 
-                if (await campRepository.SaveChangesAsync())
-                {
-                    return Ok();
-                }
+                if (await campRepository.SaveChangesAsync()) return Ok();
+
             }
             catch (Exception)
             {
