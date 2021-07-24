@@ -50,7 +50,6 @@ namespace CoreCodeCamp.Controllers
             try
             {
                 var talk = await campRepository.GetTalkByMonikerAsync(moniker, talkId, true);
-
                 if (talk == null) return NotFound();
 
                 return mapper.Map<TalkModel>(talk);
@@ -87,10 +86,34 @@ namespace CoreCodeCamp.Controllers
 
                     return Created(url, mapper.Map<TalkModel>(talk));
                 }
-                else
+                else return BadRequest("Failed to save new Talk");
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
+            }
+        }
+        #endregion
+
+        #region PUT to Update a Talk
+        [HttpPut("{talkId:int}")]
+        public async Task<ActionResult<TalkModel>> Put(string moniker, int talkId, TalkModel model)
+        {
+            try
+            {
+                var talk = await campRepository.GetTalkByMonikerAsync(moniker, talkId, true);
+                if (talk == null) return NotFound("Could not find the talk");
+
+                mapper.Map(model, talk);
+
+                if (model.Speaker != null)
                 {
-                    return BadRequest("Failed to save new Talk");
+                    var speaker = await campRepository.GetSpeakerAsync(model.Speaker.SpeakerId);
+                    if (speaker != null) talk.Speaker = speaker;
                 }
+
+                if (await campRepository.SaveChangesAsync()) return mapper.Map<TalkModel>(talk);
+                else return BadRequest("Failed to update the database");
             }
             catch (Exception)
             {

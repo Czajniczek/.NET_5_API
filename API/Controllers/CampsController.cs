@@ -121,7 +121,6 @@ namespace CoreCodeCamp.Controllers
             try
             {
                 var result = await campRepository.GetCampAsync(moniker, includeTalks);
-
                 if (result == null) return NotFound();
 
                 return mapper.Map<CampModel>(result);
@@ -140,7 +139,6 @@ namespace CoreCodeCamp.Controllers
             try
             {
                 var result = await campRepository.GetAllCampsByEventDate(theDate, includeTalks);
-
                 if (!result.Any()) return NotFound();
 
                 return mapper.Map<CampModel[]>(result);
@@ -162,14 +160,10 @@ namespace CoreCodeCamp.Controllers
                 //if(ModelState.IsValid) ...
 
                 var existingCamp = await campRepository.GetCampAsync(model.Moniker);
-
                 if (existingCamp != null) return BadRequest("Moniker in Use");
 
-
                 var location = linkGenerator.GetPathByAction("Get", "Camps", new { moniker = model.Moniker });
-
                 if (string.IsNullOrWhiteSpace(location)) return BadRequest("Could not use curent moniker");
-
 
                 // Create a new Camp
                 var camp = mapper.Map<Camp>(model);
@@ -180,10 +174,7 @@ namespace CoreCodeCamp.Controllers
                     //return Created($"/api/camps/{camp.Moniker}", mapper.Map<CampModel>(camp));
                     return Created(location, mapper.Map<CampModel>(camp));
                 }
-                else
-                {
-                    return BadRequest("Failed to save new Camp");
-                }
+                else return BadRequest("Failed to save new Camp");
             }
             catch (Exception)
             {
@@ -199,9 +190,7 @@ namespace CoreCodeCamp.Controllers
             try
             {
                 var oldCamp = await campRepository.GetCampAsync(moniker);
-
                 if (oldCamp == null) return NotFound($"Could not find camp with moniker of {moniker}");
-
 
                 mapper.Map(model, oldCamp);
 
@@ -223,14 +212,11 @@ namespace CoreCodeCamp.Controllers
             try
             {
                 var oldCamp = await campRepository.GetCampAsync(moniker);
-
                 if (oldCamp == null) return NotFound();
-
 
                 campRepository.Delete(oldCamp);
 
                 if (await campRepository.SaveChangesAsync()) return Ok();
-
             }
             catch (Exception)
             {
