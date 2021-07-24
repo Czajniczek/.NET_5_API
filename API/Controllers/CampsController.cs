@@ -116,13 +116,16 @@ namespace CoreCodeCamp.Controllers
 
         #region Getting an Individual Item
         [HttpGet("{moniker}")]
-        public async Task<ActionResult<CampModel>> Get(string moniker)
+        public async Task<ActionResult<CampModel>> Get(string moniker, bool includeTalks = false)
         {
             try
             {
-                var result = await campRepository.GetCampAsync(moniker);
+                var result = await campRepository.GetCampAsync(moniker, includeTalks);
 
-                if (result == null) return NotFound();
+                if (result == null)
+                {
+                    return NotFound();
+                }
 
                 return mapper.Map<CampModel>(result);
             }
@@ -141,7 +144,10 @@ namespace CoreCodeCamp.Controllers
             {
                 var result = await campRepository.GetAllCampsByEventDate(theDate, includeTalks);
 
-                if (!result.Any()) return NotFound();
+                if (!result.Any())
+                {
+                    return NotFound();
+                }
 
                 return mapper.Map<CampModel[]>(result);
             }
@@ -158,9 +164,11 @@ namespace CoreCodeCamp.Controllers
         {
             try
             {
+                // W przyoadku jeżeli chcemy napisać własną reakcję na walidację zamiast tej z [ApiController]
                 //if(ModelState.IsValid) ...
 
                 var existingCamp = await campRepository.GetCampAsync(model.Moniker);
+
                 if (existingCamp != null)
                 {
                     return BadRequest("Moniker in Use");
@@ -179,7 +187,8 @@ namespace CoreCodeCamp.Controllers
 
                 if (await campRepository.SaveChangesAsync())
                 {
-                    return Created($"/api/camps/{camp.Moniker}", mapper.Map<CampModel>(camp));
+                    //return Created($"/api/camps/{camp.Moniker}", mapper.Map<CampModel>(camp));
+                    return Created(location, mapper.Map<CampModel>(camp));
                 }
             }
             catch (Exception)
@@ -197,8 +206,12 @@ namespace CoreCodeCamp.Controllers
         {
             try
             {
-                var oldCamp = await campRepository.GetCampAsync(model.Moniker);
-                if (oldCamp == null) return NotFound($"Could not find camp with moniker of {moniker}");
+                var oldCamp = await campRepository.GetCampAsync(moniker);
+
+                if (oldCamp == null)
+                {
+                    return NotFound($"Could not find camp with moniker of {moniker}");
+                }
 
                 mapper.Map(model, oldCamp);
 
@@ -223,7 +236,11 @@ namespace CoreCodeCamp.Controllers
             try
             {
                 var oldCamp = await campRepository.GetCampAsync(moniker);
-                if (oldCamp == null) return NotFound();
+
+                if (oldCamp == null)
+                {
+                    return NotFound();
+                }
 
                 campRepository.Delete(oldCamp);
 
@@ -237,7 +254,7 @@ namespace CoreCodeCamp.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Awaria bazy danych");
             }
 
-            return BadRequest("Failed to delte the camp");
+            return BadRequest("Failed to delete the camp");
         }
         #endregion
     }

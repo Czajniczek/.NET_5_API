@@ -39,6 +39,7 @@ namespace CoreCodeCamp.Data
             return (await _context.SaveChangesAsync()) > 0;
         }
 
+        #region Camps
         public async Task<Camp[]> GetAllCampsByEventDate(DateTime dateTime, bool includeTalks = false)
         {
             _logger.LogInformation($"Getting all Camps");
@@ -98,7 +99,9 @@ namespace CoreCodeCamp.Data
 
             return await query.FirstOrDefaultAsync();
         }
+        #endregion
 
+        #region Talks
         public async Task<Talk[]> GetTalksByMonikerAsync(string moniker, bool includeSpeakers = false)
         {
             _logger.LogInformation($"Getting all Talks for a Camp");
@@ -137,7 +140,9 @@ namespace CoreCodeCamp.Data
 
             return await query.FirstOrDefaultAsync();
         }
+        #endregion
 
+        #region Speakers
         public async Task<Speaker[]> GetSpeakersByMonikerAsync(string moniker)
         {
             _logger.LogInformation($"Getting all Speakers for a Camp");
@@ -171,5 +176,6 @@ namespace CoreCodeCamp.Data
 
             return await query.FirstOrDefaultAsync();
         }
+        #endregion
     }
 }
