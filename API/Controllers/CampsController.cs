@@ -14,7 +14,8 @@ namespace CoreCodeCamp.Controllers
     [ApiController]
     [ApiVersion("1.0")]
     [ApiVersion("1.1")]
-    [Route("api/[controller]")]
+    //[Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class CampsController : ControllerBase
     {
         private readonly ICampRepository campRepository;
